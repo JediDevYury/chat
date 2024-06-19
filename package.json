@@ -1,0 +1,7 @@
+{
+  "name": "chat",
+  "workspaces": [
+    "packages/web-client",
+    "packages/core"
+  ]
+}
