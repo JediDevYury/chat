@@ -1,7 +1,7 @@
 {
   "name": "chat",
   "workspaces": [
-    "packages/web-client",
+    "packages/mobile-client",
     "packages/core"
   ]
 }
