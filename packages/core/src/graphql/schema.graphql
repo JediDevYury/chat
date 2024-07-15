@@ -1,0 +1,64 @@
+directive @authenticated on FIELD_DEFINITION
+
+"""
+    User type
+"""
+
+type User {
+    id: ID!
+    fullName: String
+    email: String!
+}
+
+type AuthTokens {
+    accessToken: String!
+    refreshToken: String!
+}
+
+"""
+    Inputs for the authentication
+"""
+
+input GoogleTokenInput {
+    token: String!
+}
+
+input RefreshTokenInput {
+    refreshToken: String!
+}
+
+"""
+    Inputs for the users
+"""
+
+input CreateUserInput {
+    fullName: String
+    email: String!
+}
+
+input UpdateUserInput {
+    fullName: String
+    email: String
+}
+
+
+"""
+    Query types
+"""
+type Query {
+    users: [User!]!
+    user(id: ID!): User! @authenticated
+}
+
+"""
+    Mutation types
+"""
+
+type Mutation {
+    createUser(createUserInput: CreateUserInput!): User!
+    updateUser(id: ID!, updateUserInput: UpdateUserInput!): User!
+    deleteUser(id: ID!): User
+
+    authenticate(googleTokenInput: GoogleTokenInput!): User
+    refreshTokens(refreshTokenInput: RefreshTokenInput!): AuthTokens
+}
