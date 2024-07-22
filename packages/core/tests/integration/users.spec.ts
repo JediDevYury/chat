@@ -1,7 +1,6 @@
 import {bootstrap} from "./bootstrap";
-import {generateBody} from "../helpers";
+import {generateBody, responseChecker} from "../helpers";
 import {User} from "@prisma/client";
-import {Response} from "supertest";
 import type {BootstrapData} from "../types";
 import {clearDatabase} from "../../src/helpers";
 
@@ -10,7 +9,7 @@ describe('GraphQL UsersResolver (e2e) {Supertest}', () => {
   let currentUsers: User[]
 
   beforeAll(async () => {
-    data = await bootstrap([{email: "test@test.com", fullName: "John Doe" }]);
+    data = await bootstrap([{email: "test@test.com", fullName: "John Doe"}]);
     currentUsers = await data.prisma.user.findMany()
   });
 
@@ -23,15 +22,11 @@ describe('GraphQL UsersResolver (e2e) {Supertest}', () => {
     return data.httpServer
      .post('/graphql')
      .send(generateBody('USERS'))
-     .expect(function (res: Response) {
-       const response = res.body;
-
-       expect(response.data.users).toEqual(currentUsers.map((user) => ({
-          ...user,
-          id: user.id.toString(),
-          createdAt: user.createdAt.getTime(),
-       })));
-     })
+     .expect(responseChecker('users', currentUsers.map((user) => ({
+       ...user,
+       createdAt: user.createdAt.getTime(),
+       id: user.id.toString(),
+     }))));
   });
 
   it('should get user by id', async () => {
@@ -47,14 +42,10 @@ describe('GraphQL UsersResolver (e2e) {Supertest}', () => {
      .send(generateBody('USER', {
        userId: currentUsers[0].id
      }))
-     .expect(function (res: Response) {
-        const response = res.body;
-
-        expect(response.data.user).toEqual({
-          ...user,
-          id: user.id.toString(),
-        });
-     });
+     .expect(responseChecker('user', {
+       ...user,
+       id: user.id.toString(),
+     }));
   });
 
   it('should update user', async () => {
@@ -70,13 +61,9 @@ describe('GraphQL UsersResolver (e2e) {Supertest}', () => {
      .post('/graphql')
      .set('Authorization', `Bearer ${data.tokens.accessToken}`)
      .send(generateBody('UPDATE_USER', variables))
-     .expect(function (res) {
-       const response = res.body;
-
-       expect(response.data.updateUser).toEqual({
-          ...variables.updateUserInput,
-          id: currentUsers[0].id.toString(),
-       });
-     });
+     .expect(responseChecker('updateUser', {
+       ...variables.updateUserInput,
+       id: currentUsers[0].id.toString(),
+     }));
   })
 });
