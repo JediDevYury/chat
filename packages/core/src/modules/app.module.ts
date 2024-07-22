@@ -1,17 +1,29 @@
-import { Module } from '@nestjs/common';
-import { LoggerModule } from "nestjs-pino";
-import { AppController } from '../controllers';
-import { AppService } from '../services';
+import {Module} from '@nestjs/common';
+import {LoggerModule} from "nestjs-pino";
+import {AppService, PrismaService} from '../services';
+import {ConfigModule} from "@nestjs/config";
+import {apolloDriverConfig, env, loggerConfig} from "../configs";
+import {GraphQLModule} from "@nestjs/graphql";
+import {ApolloDriverConfig} from "@nestjs/apollo";
+import {UsersModule} from "./users.module";
+import {IamModule} from "./iam.module";
 
 @Module({
-  imports: [LoggerModule.forRoot({
-      pinoHttp: {
-              transport: process.env.NODE_ENV !== 'production'
-                  ? { target: 'pino-pretty' }
-                  : undefined,
-          },
-  })],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    UsersModule,
+    IamModule,
+    LoggerModule.forRoot(loggerConfig),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+      load: [env]
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>(apolloDriverConfig),
+  ],
+  providers: [
+    AppService,
+    PrismaService,
+  ],
 })
+
 export class AppModule {}
