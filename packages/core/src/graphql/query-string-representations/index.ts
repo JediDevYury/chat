@@ -1,7 +1,7 @@
+import auth from './auth.queries'
 import users from './users.queries'
-import auth from './auth.queries';
 
 export default {
+  ...auth,
   ...users,
-  ...auth
 }

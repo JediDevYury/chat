@@ -1,8 +1,7 @@
 import {Injectable, UnauthorizedException} from "@nestjs/common";
 import {ConfigService} from "@nestjs/config";
 import {JwtService} from "@nestjs/jwt";
-import {ActiveUserData} from "../interfaces";
-import {RefreshTokenInput} from "../inputs";
+import {ActiveUserData, RefreshTokenInput} from "../types";
 import {User} from '@prisma/client';
 import {PrismaService} from "./prisma.service";
 

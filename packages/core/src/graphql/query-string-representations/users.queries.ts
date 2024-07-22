@@ -3,6 +3,7 @@ const USER = `query getUser($userId: ID!) {
     email
     fullName
     id
+    createdAt
   }
 }`
 
@@ -23,4 +24,13 @@ const UPDATE_USER = `mutation updateUser($updateUserId: ID!, $updateUserInput: U
   }
 }`
 
-export default { USERS, USER, UPDATE_USER }
+const DELETE_USER = `mutation deleteUser($deleteUserId: ID!) {
+  deleteUser(id: $deleteUserId) {
+    id
+    fullName
+    email
+    createdAt
+  }
+}`
+
+export default {USERS, USER, UPDATE_USER, DELETE_USER}

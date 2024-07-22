@@ -1,5 +1,5 @@
 import {Args, Mutation, Resolver} from "@nestjs/graphql";
-import {RefreshTokenInput} from "../inputs";
+import {RefreshTokenInput} from "../types";
 import {AuthenticationService} from "../services";
 
 @Resolver('authentication')

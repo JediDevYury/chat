@@ -1,4 +1,4 @@
-import {PrismaService} from "../../src/services";
+import {PrismaService, UsersService} from "../../src/services";
 import {Test, TestingModule} from "@nestjs/testing";
 import {AppModule} from "../../src/modules";
 import {CommonExceptionFilter} from "../../src/filters";
@@ -14,9 +14,10 @@ export const bootstrap = async (users: Omit<User, 'createdAt' | 'id'>[]): Promis
     imports: [AppModule],
   }).compile();
 
-  const app = moduleFixture.createNestApplication();
+  const prisma = new PrismaService();
+  const userService = new UsersService(prisma);
 
-  const prisma = app.get(PrismaService)
+  const app = moduleFixture.createNestApplication();
 
   app.useGlobalFilters(new CommonExceptionFilter());
 
@@ -43,6 +44,7 @@ export const bootstrap = async (users: Omit<User, 'createdAt' | 'id'>[]): Promis
       refreshToken: generateToken(user, {secret: refreshTokenSecret}),
     },
     user,
+    userService,
     httpServer,
     prisma
   }

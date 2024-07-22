@@ -1,7 +1,7 @@
 import {GoogleAuthenticationService} from "../services";
 import {Args, Context, Mutation, Resolver} from "@nestjs/graphql";
-import {ExtendedGqlExecutionContext} from "../interfaces";
-import {GoogleTokenInput} from "../inputs";
+import {ExtendedGqlExecutionContext} from "../types";
+import {GoogleTokenInput} from "../types";
 
 @Resolver('GoogleAuthentication')
 export class GoogleAuthenticationResolver {

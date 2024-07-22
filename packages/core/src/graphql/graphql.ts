@@ -23,9 +23,9 @@ export class UpdateUserInput {
 
 export class User {
     id: number;
-    fullName?: Nullable<string>;
+    fullName: string;
     email: string;
-    createdAt: Date;
+    createdAt: GraphQLISODateTime;
 }
 
 export class AuthTokens {
@@ -45,4 +45,5 @@ export abstract class IMutation {
     refreshTokens?: Nullable<AuthTokens>;
 }
 
+export type GraphQLISODateTime = any;
 type Nullable<T> = T | null;

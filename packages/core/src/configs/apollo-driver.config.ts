@@ -12,6 +12,9 @@ export const apolloDriverConfig: ApolloDriverConfig = {
   plugins: [
     ApolloServerPluginLandingPageLocalDefault(),
   ],
+  buildSchemaOptions: {
+    dateScalarMode: 'isoDate',
+  },
   transformSchema: async (schema) => schemeTransformer(schema, 'authenticated'),
   context: ({req, res}) => ({req, res}),
 }

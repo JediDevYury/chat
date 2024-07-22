@@ -7,7 +7,6 @@ import {GraphQLModule} from "@nestjs/graphql";
 import {ApolloDriverConfig} from "@nestjs/apollo";
 import {UsersModule} from "./users.module";
 import {IamModule} from "./iam.module";
-import {DateScalar} from "../graphql/scalars";
 
 @Module({
   imports: [
@@ -24,7 +23,6 @@ import {DateScalar} from "../graphql/scalars";
   providers: [
     AppService,
     PrismaService,
-    DateScalar,
   ],
 })
 

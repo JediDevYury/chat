@@ -1,20 +1,20 @@
 import {Args, Context, Mutation, Query, Resolver} from '@nestjs/graphql';
-import {UpdateUserInput} from "../inputs";
+import {UpdateUserInput} from "../types";
 import {ParseIntPipe} from "@nestjs/common";
 import {UsersService} from "../services";
-import {User} from "@prisma/client";
+import * as GraphQLTypes from '../graphql/graphql';
 
 @Resolver('Users')
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   @Query('users')
-  async findAll() : Promise<User[]> {
+  async findAll() : Promise<GraphQLTypes.User[]> {
     return this.usersService.findAll();
   }
 
   @Query('user')
-  async findOne(@Args('id', ParseIntPipe) id: number) : Promise<User> {
+  async findOne(@Args('id', ParseIntPipe) id: number) : Promise<GraphQLTypes.User> {
     return this.usersService.findOne(id);
   }
 
@@ -22,15 +22,15 @@ export class UsersResolver {
   async update(
    @Args('id', ParseIntPipe) id: number,
    @Args('updateUserInput') updateUserInput: UpdateUserInput,
-  ): Promise<User> {
+  ): Promise<GraphQLTypes.User> {
     return this.usersService.update(id, updateUserInput);
   }
 
   @Mutation('deleteUser')
   async remove(
    @Args('id', ParseIntPipe) id: number,
-   @Context() user: User,
-  ): Promise<User> {
+   @Context() user: GraphQLTypes.User,
+  ): Promise<GraphQLTypes.User> {
     return this.usersService.delete(id);
   }
 }

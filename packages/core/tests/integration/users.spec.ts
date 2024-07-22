@@ -1,8 +1,8 @@
 import {bootstrap} from "./bootstrap";
 import {generateBody, responseChecker} from "../helpers";
-import {User} from "@prisma/client";
 import type {BootstrapData} from "../types";
 import {clearDatabase} from "../../src/helpers";
+import {User} from "../../src/graphql";
 
 describe('GraphQL UsersResolver (e2e) {Supertest}', () => {
   let data: BootstrapData;
@@ -10,7 +10,9 @@ describe('GraphQL UsersResolver (e2e) {Supertest}', () => {
 
   beforeAll(async () => {
     data = await bootstrap([{email: "test@test.com", fullName: "John Doe"}]);
-    currentUsers = await data.prisma.user.findMany()
+    const users = await data.prisma.user.findMany();
+
+    currentUsers = await Promise.all(users.map(user => data.userService.toDto(user)));
   });
 
   afterAll(async () => {
@@ -22,19 +24,17 @@ describe('GraphQL UsersResolver (e2e) {Supertest}', () => {
     return data.httpServer
      .post('/graphql')
      .send(generateBody('USERS'))
-     .expect(responseChecker('users', currentUsers.map((user) => ({
-       ...user,
-       createdAt: user.createdAt.getTime(),
-       id: user.id.toString(),
-     }))));
+     .expect(responseChecker('users', currentUsers));
   });
 
   it('should get user by id', async () => {
-    const {createdAt, ...user} = await data.prisma.user.findUnique({
+    const user = await data.prisma.user.findUnique({
       where: {
         id: currentUsers[0].id
       }
     })
+
+    const userDto = await data.userService.toDto(user);
 
     return data.httpServer
      .post('/graphql')
@@ -42,10 +42,7 @@ describe('GraphQL UsersResolver (e2e) {Supertest}', () => {
      .send(generateBody('USER', {
        userId: currentUsers[0].id
      }))
-     .expect(responseChecker('user', {
-       ...user,
-       id: user.id.toString(),
-     }));
+     .expect(responseChecker('user', userDto));
   });
 
   it('should update user', async () => {
@@ -63,7 +60,25 @@ describe('GraphQL UsersResolver (e2e) {Supertest}', () => {
      .send(generateBody('UPDATE_USER', variables))
      .expect(responseChecker('updateUser', {
        ...variables.updateUserInput,
-       id: currentUsers[0].id.toString(),
+       id: variables.updateUserId,
      }));
   })
+
+  it('should delete user', async () => {
+    const user = await data.prisma.user.findUnique({
+      where: {
+        id: currentUsers[0].id
+      }
+    });
+
+    const userDto = await data.userService.toDto(user);
+
+    return data.httpServer
+     .post('/graphql')
+     .set('Authorization', `Bearer ${data.tokens.accessToken}`)
+     .send(generateBody('DELETE_USER', {
+       deleteUserId: currentUsers[0].id
+     }))
+     .expect(responseChecker('deleteUser', userDto));
+  });
 });

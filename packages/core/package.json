@@ -18,7 +18,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:integration": "npx prisma generate && jest --config tests/integration/jest-integration.json --detectOpenHandles",
+    "test:integration": "npx prisma migrate deploy && jest --config tests/integration/jest-integration.json --detectOpenHandles",
     "migrate:dev": "prisma migrate dev",
     "migrate:reset": "prisma migrate reset"
   },

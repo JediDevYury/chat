@@ -1,6 +1,6 @@
 import {VerifyIdTokenOptions} from "google-auth-library";
 import {JwtService} from "@nestjs/jwt";
-import {JwtDecoded} from "../../src/interfaces";
+import {JwtDecoded} from "../../src/types";
 
 export const mockVerifyTokenId = jest.fn(({idToken, audience }: VerifyIdTokenOptions) => {
   const jwtService = new JwtService();

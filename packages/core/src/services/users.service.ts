@@ -1,6 +1,8 @@
 import {Injectable, NotFoundException} from '@nestjs/common';
 import {UpdateUserInput} from "../graphql";
 import {PrismaService} from "./prisma.service";
+import {User} from '@prisma/client';
+import * as GraphQLTypes from '../graphql';
 
 @Injectable()
 export class UsersService {
@@ -9,11 +11,13 @@ export class UsersService {
   ) {}
 
   async findAll() {
-    return this.prisma.user.findMany();
+    const users = await this.prisma.user.findMany();
+
+    return Promise.all(users.map(async (user) => this.toDto(user)));
   }
 
   async findOne(id: number) {
-    const user = this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id },
     })
 
@@ -21,7 +25,7 @@ export class UsersService {
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
-    return user;
+    return this.toDto(user);
   }
 
   async update(id: number, updateUserInput: Partial<UpdateUserInput>) {
@@ -31,10 +35,12 @@ export class UsersService {
     if(!user) {
       throw new NotFoundException(`User #${id} does not exist`);
     }
-    return this.prisma.user.update({
+    const newUser = await this.prisma.user.update({
       where: { id },
       data: updateUserInput,
     })
+
+    return this.toDto(newUser);
   }
 
   async delete(id: number) {
@@ -50,6 +56,13 @@ export class UsersService {
       where: { id },
     });
 
-    return user;
+    return this.toDto(user);
+  }
+
+  async toDto(user: User): Promise<GraphQLTypes.User> {
+    return {
+      ...user,
+      createdAt: user.createdAt.toISOString(),
+    }
   }
 }

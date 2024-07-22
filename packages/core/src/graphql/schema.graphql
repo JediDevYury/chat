@@ -1,20 +1,16 @@
 directive @authenticated on FIELD_DEFINITION
 
-"""
-    Scalar types
-"""
-
-scalar Date
+scalar GraphQLISODateTime
 
 """
     User type
 """
 
 type User {
-    id: ID!
-    fullName: String
+    id: Int!
+    fullName: String!
     email: String!
-    createdAt: Date!
+    createdAt: GraphQLISODateTime!
 }
 
 type AuthTokens {
