@@ -1,6 +1,6 @@
-import * as GraphQLTypes from '../../graphql';
+import * as GraphQLTypes  from '../../graphql';
 import {IsEmail, IsNotEmpty, IsString} from "class-validator";
-export class UpdateUserInput extends GraphQLTypes.CreateUserInput {
+export class UpdateUserInput extends GraphQLTypes.UpdateUserInput {
   @IsString()
   fullName: string;
 
@@ -8,7 +8,7 @@ export class UpdateUserInput extends GraphQLTypes.CreateUserInput {
   @IsEmail()
   email: string;
 
-  constructor(input: GraphQLTypes.CreateUserInput) {
+  constructor(input: GraphQLTypes.UpdateUserInput) {
     super();
     Object.assign(this, input);
   }

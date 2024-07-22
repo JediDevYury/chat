@@ -1,6 +1,7 @@
 export const env = () => ({
   jwt: {
-    secret: process.env.JWT_SECRET ?? 'secret',
+    accessTokenSecret: process.env.JWT_ACCESS_TOKEN_SECRET ?? 'access-secret',
+    refreshTokenSecret: process.env.JWT_REFRESH_TOKEN_SECRET ?? 'refresh-secret',
     audience: process.env.JWT_AUDIENCE ?? 'audience',
     issuer: process.env.JWT_ISSUER ?? 'issuer',
     accessTokenTtl: parseInt(process.env.JWT_ACCESS_TOKEN_TTL ?? '3600', 10),
@@ -10,5 +11,5 @@ export const env = () => ({
   google: {
     androidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID ?? 'android-client-id',
     iosClientId: process.env.GOOGLE_IOS_CLIENT_ID ?? 'ios-client-id',
-  },
+  }
 })

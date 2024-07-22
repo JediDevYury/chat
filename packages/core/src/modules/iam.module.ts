@@ -1,15 +1,14 @@
 import {Module} from "@nestjs/common";
-import {TypeOrmModule} from "@nestjs/typeorm";
-import {User, AuthProvider} from "../entities";
 import {JwtService} from "@nestjs/jwt";
 import {AuthenticationService, GoogleAuthenticationService} from "../services";
 import {GoogleAuthenticationResolver, AuthenticationResolver} from "../resolvers";
+import {PrismaModule} from "./prisma.module";
+import {ConfigService} from "@nestjs/config";
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User, AuthProvider]),
-  ],
+  imports: [PrismaModule],
   providers: [
+    ConfigService,
     AuthenticationResolver,
     GoogleAuthenticationResolver,
     AuthenticationService,
@@ -17,5 +16,4 @@ import {GoogleAuthenticationResolver, AuthenticationResolver} from "../resolvers
     JwtService,
   ],
 })
-
 export class IamModule {}

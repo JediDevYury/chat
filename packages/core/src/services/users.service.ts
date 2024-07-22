@@ -1,62 +1,55 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "../entities";
-import { Repository } from "typeorm";
-import {CreateUserInput, UpdateUserInput} from "../graphql";
-import { UserInputError} from "@nestjs/apollo";
+import {Injectable, NotFoundException} from '@nestjs/common';
+import {UpdateUserInput} from "../graphql";
+import {PrismaService} from "./prisma.service";
 
 @Injectable()
 export class UsersService {
   constructor(
-   @InjectRepository(User)
-   private usersRepository: Repository<User>,
+   private readonly prisma: PrismaService,
   ) {}
 
   async findAll() {
-    return this.usersRepository.find();
+    return this.prisma.user.findMany();
   }
 
   async findOne(id: number) {
-    const user = this.usersRepository.findOne({
+    const user = this.prisma.user.findUnique({
       where: { id },
-    });
+    })
 
     if (!user) {
-      throw new UserInputError(`User with id ${id} not found`);
+      throw new NotFoundException(`User with id ${id} not found`);
     }
 
     return user;
   }
 
-  async create(createUserInput: CreateUserInput) {
-    const user = this.usersRepository.create(createUserInput);
-    return this.usersRepository.save(user);
-  }
-
   async update(id: number, updateUserInput: Partial<UpdateUserInput>) {
-    const user = await this.usersRepository.preload({
-      id,
-      ...updateUserInput,
+    const user = await this.prisma.user.findUnique({
+      where: { id },
     });
-
-    if (!user) {
-      throw new UserInputError(`User #${id} does not exist`);
+    if(!user) {
+      throw new NotFoundException(`User #${id} does not exist`);
     }
-
-    return this.usersRepository.save(user);
+    return this.prisma.user.update({
+      where: { id },
+      data: updateUserInput,
+    })
   }
 
   async delete(id: number) {
-    const user = await this.usersRepository.findOne({
+    const user = await this.prisma.user.findUnique({
       where: { id },
     });
 
     if(!user) {
-      throw new UserInputError(`User #${id} does not exist`);
+      throw new NotFoundException(`User #${id} does not exist`);
     }
 
-    const removedUser = await this.usersRepository.remove(user);
+    await this.prisma.user.delete({
+      where: { id },
+    });
 
-    return Object.assign({}, removedUser, { id });
+    return user;
   }
 }

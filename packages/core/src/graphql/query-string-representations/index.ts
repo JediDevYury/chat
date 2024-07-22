@@ -1,2 +1,7 @@
-export * from './users.queries';
-export * from './auth.queries';
+import users from './users.queries'
+import auth from './auth.queries';
+
+export default {
+  ...users,
+  ...auth
+}

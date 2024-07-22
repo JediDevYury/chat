@@ -1,87 +1,82 @@
-import {Test, TestingModule} from '@nestjs/testing';
-import {INestApplication} from '@nestjs/common';
-import * as request from 'supertest';
-import {AppModule} from "../../src/modules";
-import {generateToken} from "../../src/helpers";
-import {UPDATE_USER, USER, USERS} from "../../src/graphql/query-string-representations";
+import {bootstrap} from "./bootstrap";
+import {generateBody} from "../helpers";
+import {User} from "@prisma/client";
+import {Response} from "supertest";
+import type {BootstrapData} from "../types";
+import {clearDatabase} from "../../src/helpers";
 
 describe('GraphQL UsersResolver (e2e) {Supertest}', () => {
-  let app: INestApplication;
-  let httpServer: ReturnType<typeof request>;
-  let token: string;
+  let data: BootstrapData;
+  let currentUsers: User[]
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    token = generateToken({id: 1, email: "test.email@test.com", fullName: "Test User"})
-    app = moduleFixture.createNestApplication();
-
-    await app.init();
-
-    httpServer = await request(app.getHttpServer());
+    data = await bootstrap([{email: "test@test.com", fullName: "John Doe" }]);
+    currentUsers = await data.prisma.user.findMany()
   });
 
   afterAll(async () => {
-    await app.close();
+    await clearDatabase(data.prisma);
+    await data.app.close();
   });
 
   it('should get users', async () => {
-    return httpServer
+    return data.httpServer
      .post('/graphql')
-     .send({
-       query: USERS,
-     })
-     .expect(function (res) {
-       const response = JSON.parse(res.text);
+     .send(generateBody('USERS'))
+     .expect(function (res: Response) {
+       const response = res.body;
 
-       expect(response.data.users.length).toBeGreaterThan(0);
-       expect(response.data.users[0].id).toBeDefined();
-     });
+       expect(response.data.users).toEqual(currentUsers.map((user) => ({
+          ...user,
+          id: user.id.toString(),
+          createdAt: user.createdAt.getTime(),
+       })));
+     })
   });
 
   it('should get user by id', async () => {
-    const userId = 1;
+    const {createdAt, ...user} = await data.prisma.user.findUnique({
+      where: {
+        id: currentUsers[0].id
+      }
+    })
 
-    return httpServer
+    return data.httpServer
      .post('/graphql')
-     .set('Authorization', `Bearer ${token}`)
-     .send({
-       query: USER,
-       variables: {userId},
-     })
-     .expect(function (res) {
-       const response = JSON.parse(res.text);
+     .set('Authorization', `Bearer ${data.tokens.accessToken}`)
+     .send(generateBody('USER', {
+       userId: currentUsers[0].id
+     }))
+     .expect(function (res: Response) {
+        const response = res.body;
 
-       expect(response.data.user.id).toBe(userId);
+        expect(response.data.user).toEqual({
+          ...user,
+          id: user.id.toString(),
+        });
      });
   });
 
   it('should update user', async () => {
     const variables = {
-      updateUserId: '1',
+      updateUserId: currentUsers[0].id,
       updateUserInput: {
-        email: 'new.test.email@test.com',
+        email: 'new.email@test.com',
         fullName: 'New Test User',
       }
     }
 
-    return httpServer
+    return data.httpServer
      .post('/graphql')
-     .set('Authorization', `Bearer ${token}`)
-     .send({
-       query: UPDATE_USER,
-       variables
-     })
+     .set('Authorization', `Bearer ${data.tokens.accessToken}`)
+     .send(generateBody('UPDATE_USER', variables))
      .expect(function (res) {
-       const response = JSON.parse(res.text);
+       const response = res.body;
 
-       const newUser = {
-         ...variables.updateUserInput,
-          id: variables.updateUserId,
-       }
-
-       expect(response.data.updateUser).toEqual(newUser);
+       expect(response.data.updateUser).toEqual({
+          ...variables.updateUserInput,
+          id: currentUsers[0].id.toString(),
+       });
      });
   })
 });

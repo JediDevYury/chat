@@ -1,8 +1,10 @@
 import {User} from "../graphql";
 import {JwtService} from "@nestjs/jwt";
-import {env} from "../configs/env";
+import {env} from "../configs";
 
-export const generateToken = <T>(user: User, payload?: T) => {
+export const generateToken = <T extends {
+  secret?: string;
+}>(user: User, payload?: T) => {
   const jwtService = new JwtService();
   const variables = env();
 
@@ -10,7 +12,7 @@ export const generateToken = <T>(user: User, payload?: T) => {
     sub: user.id,
     ...payload,
   }, {
-    secret: variables.jwt.secret,
+    secret: "secret" in payload ? payload.secret : variables.jwt.accessTokenSecret,
     expiresIn: variables.jwt.accessTokenTtl,
   });
 };

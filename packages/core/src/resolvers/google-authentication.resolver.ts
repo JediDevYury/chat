@@ -1,7 +1,7 @@
 import {GoogleAuthenticationService} from "../services";
-import {Args, Context,Mutation, Resolver} from "@nestjs/graphql";
-import {GoogleTokenInput} from "../inputs";
+import {Args, Context, Mutation, Resolver} from "@nestjs/graphql";
 import {ExtendedGqlExecutionContext} from "../interfaces";
+import {GoogleTokenInput} from "../inputs";
 
 @Resolver('GoogleAuthentication')
 export class GoogleAuthenticationResolver {
@@ -14,9 +14,13 @@ export class GoogleAuthenticationResolver {
   ){
     const {user, tokens} = await this.googleAuthenticationService.authenticate(googleTokenInput.token);
 
-    ctx.res.cookie('accessToken', tokens.accessToken, {httpOnly: true});
-    ctx.res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true});
+    this.setTokensToCookie(ctx, tokens);
 
     return user;
+  }
+
+  setTokensToCookie(ctx: ExtendedGqlExecutionContext, tokens: {accessToken: string, refreshToken: string}) {
+    ctx.res.cookie('accessToken', tokens.accessToken, {httpOnly: true});
+    ctx.res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true});
   }
 }

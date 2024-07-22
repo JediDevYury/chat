@@ -2,7 +2,7 @@ import {Args, Context, Mutation, Query, Resolver} from '@nestjs/graphql';
 import {UpdateUserInput} from "../inputs";
 import {ParseIntPipe} from "@nestjs/common";
 import {UsersService} from "../services";
-import {User} from "../entities";
+import {User} from "@prisma/client";
 
 @Resolver('Users')
 export class UsersResolver {

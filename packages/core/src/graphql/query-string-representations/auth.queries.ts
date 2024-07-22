@@ -1,4 +1,4 @@
-const AUTHENTICATE = `mutation authenticate($googleTokenInput: GoogleTokenInput!) {
+const AUTHENTICATE = `mutation authenticate($googleTokenInput: TokenInput!) {
   authenticate(googleTokenInput: $googleTokenInput) {
     email
   }
@@ -11,4 +11,4 @@ const REFRESH_TOKENS = `mutation refreshTokens($refreshTokenInput: RefreshTokenI
   }
 }`
 
-export { AUTHENTICATE, REFRESH_TOKENS }
+export default { AUTHENTICATE, REFRESH_TOKENS }

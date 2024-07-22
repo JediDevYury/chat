@@ -8,17 +8,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export class GoogleTokenInput {
+export class TokenInput {
     token: string;
 }
 
 export class RefreshTokenInput {
     refreshToken: string;
-}
-
-export class CreateUserInput {
-    fullName?: Nullable<string>;
-    email: string;
 }
 
 export class UpdateUserInput {
@@ -30,6 +25,7 @@ export class User {
     id: number;
     fullName?: Nullable<string>;
     email: string;
+    createdAt: Date;
 }
 
 export class AuthTokens {
@@ -43,7 +39,6 @@ export abstract class IQuery {
 }
 
 export abstract class IMutation {
-    createUser?: User;
     updateUser?: User;
     deleteUser?: Nullable<User>;
     authenticate?: Nullable<User>;

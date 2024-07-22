@@ -1,10 +1,10 @@
 import {Injectable, OnModuleInit, UnauthorizedException} from '@nestjs/common';
 import {OAuth2Client} from 'google-auth-library';
 import {ConfigService} from '@nestjs/config';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Repository} from 'typeorm';
 import {AuthenticationService} from './authentication.service';
-import {AuthProvider, User} from '../entities';
+import {PrismaService} from "./prisma.service";
+import {Prisma} from "@prisma/client";
+import {Logger} from "nestjs-pino";
 
 @Injectable()
 export class GoogleAuthenticationService implements OnModuleInit {
@@ -13,8 +13,8 @@ export class GoogleAuthenticationService implements OnModuleInit {
   constructor(
    private readonly configService: ConfigService,
    private readonly authService: AuthenticationService,
-   @InjectRepository(AuthProvider) private readonly authProviderRepository: Repository<AuthProvider>,
-   @InjectRepository(User) private readonly userRepository: Repository<User>,
+   private readonly prisma: PrismaService,
+   private readonly logger: Logger,
   ) {}
 
   async onModuleInit() {
@@ -36,23 +36,38 @@ export class GoogleAuthenticationService implements OnModuleInit {
       throw new UnauthorizedException('Email not verified');
     }
 
-    const {generatedMaps: userGeneratedMaps} = await this.userRepository.upsert({
-      email,
-      fullName: given_name
-    }, ['email']);
+    return this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.upsert({
+        where: {
+          email,
+        },
+        create: {
+          email,
+          fullName: given_name,
+        },
+        update: {
+          fullName: given_name,
+        }
+      });
 
-    await this.authProviderRepository.insert({
-      userId: userGeneratedMaps[0].id,
-      provider: "google",
-      providerId: userId,
+      this.logger.log(`User ${user.id} logged in`);
+
+      await tx.authProvider.create({
+        data: {
+          userId: user.id,
+          provider: "google",
+          providerId: userId,
+        }
+      });
+
+      const tokens = await this.authService.generateTokens(user);
+
+      return {
+        user,
+        tokens,
+      }
+    }, {
+      isolationLevel: Prisma.TransactionIsolationLevel.ReadUncommitted,
     });
-
-    const tokens = await this.authService.generateTokens(userGeneratedMaps[0] as User);
-    const user = await this.userRepository.findOne(userGeneratedMaps[0].id);
-
-    return {
-      user,
-      tokens,
-    }
   }
 }

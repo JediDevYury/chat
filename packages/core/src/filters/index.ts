@@ -1,1 +1,1 @@
-export * from './auth.filter';
+export * from './common-exception.filter';

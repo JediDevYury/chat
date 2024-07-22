@@ -11,6 +11,7 @@ const USERS = `query getUsers {
     email
     fullName
     id
+    createdAt
   }
 }`
 
@@ -22,4 +23,4 @@ const UPDATE_USER = `mutation updateUser($updateUserId: ID!, $updateUserInput: U
   }
 }`
 
-export { USERS, USER, UPDATE_USER }
+export default { USERS, USER, UPDATE_USER }

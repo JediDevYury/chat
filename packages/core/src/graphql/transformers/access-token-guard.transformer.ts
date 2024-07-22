@@ -4,14 +4,14 @@ import {UnauthorizedException} from "@nestjs/common";
 import {REQUEST_USER_KEY} from "../../constants";
 import {extractTokenFromHeader} from "../../helpers";
 import {JwtService} from "@nestjs/jwt";
-import {env} from "../../configs/env";
+import {env} from "../../configs";
 
 export const schemeTransformer = (schema: GraphQLSchema, directiveName: string) => {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
       const {jwt} = env();
       const jwtService = new JwtService({
-        secret: jwt.secret,
+        secret: jwt.accessTokenSecret,
         signOptions: {
           expiresIn: jwt.accessTokenTtl,
         },
@@ -27,9 +27,7 @@ export const schemeTransformer = (schema: GraphQLSchema, directiveName: string) 
         }
 
         try {
-          const payload = await jwtService.verifyAsync(token);
-
-          req[REQUEST_USER_KEY] = payload;
+          req[REQUEST_USER_KEY] = await jwtService.verifyAsync(token);
         } catch(error) {
           throw new UnauthorizedException();
         }

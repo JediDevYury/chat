@@ -6,18 +6,16 @@ import {
   UnauthorizedException,
   ConflictException,
   InternalServerErrorException,
-  NotFoundException,
 } from "@nestjs/common";
-import { isAuthException } from "../helpers";
+import {isNotFoundException, isUniqueViolation, isAuthException} from "../helpers";
 
 @Catch()
-export class AuthErrorFilter implements ExceptionFilter {
+export class CommonExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException & {
     code?: string | number;
   }, host: ArgumentsHost) {
-    const pgUniqueViolationErrorCode = '23505';
 
-    if (exception.code === pgUniqueViolationErrorCode) {
+    if (isUniqueViolation(exception)) {
       throw new ConflictException();
     }
 
@@ -25,8 +23,9 @@ export class AuthErrorFilter implements ExceptionFilter {
       throw new UnauthorizedException(exception.message);
     }
 
-    if(exception instanceof NotFoundException) {
-      throw new NotFoundException(exception.message);
+    if(isNotFoundException(exception)) {
+      console.error(exception);
+      return;
     }
 
     throw new InternalServerErrorException();
